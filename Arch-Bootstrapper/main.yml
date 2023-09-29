@@ -7,7 +7,7 @@
     - yay
     - ssh
     - user_config
-    - net_tools
+    - networks
     - sysmon
     - firejail
     - virtualisation

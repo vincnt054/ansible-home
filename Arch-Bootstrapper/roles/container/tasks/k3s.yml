@@ -28,6 +28,9 @@
     owner: root
     group: root
     mode: '0644'
+  notify:
+    - Enable shutdown-k3s service
+  tags: serv
 
 - name: Execute k3s script
   ansible.builtin.script: install.sh
@@ -37,5 +40,4 @@
     creates: /etc/systemd/system/k3s.service
   notify:
     - Enable k3s service
-    - Enable shutdown-k3s service
   ignore_errors: true
