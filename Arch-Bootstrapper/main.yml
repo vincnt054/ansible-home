@@ -3,15 +3,15 @@
   become: true
   gather_facts: true
   roles:
-    - user_creation
+    - natus
     - yay
     - ssh
-    - user_config
+    - userspace
     - networks
     - sysmon
     - firejail
     - virtualisation
-    - container_orchestration
+    - container
 
   pre_tasks:
     - name: Test connection to host
