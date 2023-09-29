@@ -21,6 +21,14 @@
     group: root
     mode: '0754'
 
+- name: Copy shutdown-k3s service into /etc/systemd/system/shutdown-k3s.service
+  ansible.builtin.copy:
+    src: shutdown-k3s.service
+    dest: /etc/systemd/system/shutdown-k3s.service
+    owner: root
+    group: root
+    mode: '0644'
+
 - name: Execute k3s script
   ansible.builtin.script: install.sh
   environment:
@@ -29,4 +37,5 @@
     creates: /etc/systemd/system/k3s.service
   notify:
     - Enable k3s service
+    - Enable shutdown-k3s service
   ignore_errors: true

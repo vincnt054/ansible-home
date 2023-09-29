@@ -8,3 +8,8 @@
   ansible.builtin.service:
     name: k3s
     enabled: true
+
+- name: Enable shutdown-k3s service
+  ansible.builtin.service:
+    name: shutdown-k3s
+    enabled: true
