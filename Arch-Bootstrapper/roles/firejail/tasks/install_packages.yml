@@ -1,0 +1,16 @@
+---
+- name: Pacman -S firejail
+  community.general.pacman:
+    name:
+      - firejail
+    state: present
+    extra_args: --noconfirm
+    force: true
+
+- name: Yay -S firewarden
+  become: true
+  become_user: "{{ aur.user }}"
+  ansible.builtin.command:
+    "yay --noconfirm --noprogressbar --needed --sync firewarden"
+  register: output
+  changed_when: output.rc != 0

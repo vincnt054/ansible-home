@@ -1,0 +1,10 @@
+---
+- name: Enable docker service
+  ansible.builtin.service:
+    name: docker
+    enabled: true
+
+- name: Enable k3s service
+  ansible.builtin.service:
+    name: k3s
+    enabled: true

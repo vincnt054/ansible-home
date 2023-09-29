@@ -1,0 +1,12 @@
+---
+- name: Add a localhostv4 to /etc/hosts
+  ansible.builtin.lineinfile:
+    path: /etc/hosts
+    state: present
+    line: 127.0.0.1 localhost localhost.localdomain localhost4 localhost4. localdomain4
+
+- name: Add a localhostv6 to /etc/hosts
+  ansible.builtin.lineinfile:
+    path: /etc/hosts
+    state: present
+    line: ::1 localhost localhost.localdomain localhost6 localhost6. localdomain6

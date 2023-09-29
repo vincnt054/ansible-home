@@ -1,0 +1,5 @@
+---
+- name: Enable emptty service
+  ansible.builtin.service:
+    name: emptty
+    enabled: true

@@ -1,0 +1,35 @@
+---
+- hosts: all
+  become: true
+  gather_facts: true
+  roles:
+    - user_creation
+    - yay
+    - ssh
+    - user_config
+    - net_tools
+    - sysmon
+    - firejail
+    - virtualisation
+    - container_orchestration
+
+  pre_tasks:
+    - name: Test connection to host
+      ansible.builtin.ping:
+
+    - name: Test connection to archlinux.org
+      ansible.builtin.shell: ping -c 3 www.archlinux.org
+
+    - name: pacman update
+      community.general.pacman:
+        update_cache: true
+        upgrade: true
+
+  post_tasks:
+    - meta: end_play
+    - name: Initiate a reboot
+      ansible.builtin.reboot:
+        reboot_timeout: 3600
+      async: 1
+      poll: 0
+      ignore_errors: true

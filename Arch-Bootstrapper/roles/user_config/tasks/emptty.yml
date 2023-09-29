@@ -1,0 +1,22 @@
+---
+- name: Emptty conf file
+  ansible.builtin.template:
+    src: emptty_conf.j2
+    dest: /etc/emptty/conf
+    mode: '0644'
+  notify:
+    - Enable emptty service
+
+- name: Xinitrc
+  ansible.builtin.copy:
+    src: xinitrc
+    dest: "/home/{{ user.name }}/.xinitrc"
+    owner: "{{ user.name }}"
+    group: "{{ user.group }}"
+    mode: '0744'
+
+- name: Motd
+  ansible.builtin.copy:
+    src: motd
+    dest: "/etc/emptty/motd"
+    mode: '0644'

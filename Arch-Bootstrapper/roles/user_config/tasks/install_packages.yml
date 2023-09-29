@@ -1,0 +1,84 @@
+---
+- name: Pacman -S browser
+  community.general.pacman:
+    name:
+      - firefox
+      - qutebrowser
+    state: present
+    extra_args: --noconfirm
+    force: true
+
+- name: Pacman -S clitools
+  community.general.pacman:
+    name:
+      - xterm
+      - feh
+      - ffmpeg
+      - ansible
+      - vim
+      - sxiv
+      - fzf
+      - ripgrep
+      - htop
+      - tmux
+      - imagemagick
+      - man-db
+      - clipmenu
+      - gnupg
+      - zip
+      - unzip
+      - pass
+      - rsync
+      - p7zip
+      - apparmor
+      - gnupg
+      - unrar
+      - atool
+      - hashdeep
+      - ddrescue
+      - lesspipe
+      - pigz
+    state: present
+    extra_args: --noconfirm
+    force: true
+
+- name: Pacman -S fonts
+  community.general.pacman:
+    name:
+      - adobe-source-han-sans-cn-fonts
+      - adobe-source-han-sans-hk-fonts
+      - adobe-source-han-sans-jp-fonts
+      - adobe-source-han-sans-kr-fonts
+      - adobe-source-han-sans-otc-fonts
+      - adobe-source-han-sans-tw-fonts
+    state: present
+    extra_args: --noconfirm
+    force: true
+
+- name: Pacman -S userspace
+  community.general.pacman:
+    name:
+      - i3
+      - mpv
+      - emacs
+      - dunst
+      - ghidra
+      - texlive
+      - zathura
+      - zathura-djvu
+      - zathura-pdf-mupdf
+    state: present
+    extra_args: --noconfirm
+    force: true
+
+- name: Yay -S discord emptty ddd plantUML
+  become: true
+  become_user: "{{ aur.user }}"
+  ansible.builtin.command:
+    "yay --noconfirm --noprogressbar --needed --sync {{ item }}"
+  changed_when: false
+  loop:
+    - discord
+    - emptty
+    - ddd
+    - plantuml

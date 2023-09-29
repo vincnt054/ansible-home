@@ -1,0 +1,6 @@
+---
+- name: Enable service libvirtd and ensure it is not masked
+  ansible.builtin.systemd:
+    name: libvirtd
+    enabled: true
+    masked: false

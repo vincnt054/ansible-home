@@ -1,0 +1,9 @@
+---
+- name: Pacman -S docker
+  community.general.pacman:
+    name:
+      - docker
+      - docker-compose
+    state: present
+    extra_args: --noconfirm
+    force: true

@@ -1,0 +1,17 @@
+---
+- name: Pacman -S sysmon
+  community.general.pacman:
+    name:
+      - sysstat
+      - glances
+      - btop
+      - htop
+      - lsof
+      - strace
+      - ltrace
+      - ngrep
+      - smartmontools
+      - progress
+    state: present
+    extra_args: --noconfirm
+    force: true

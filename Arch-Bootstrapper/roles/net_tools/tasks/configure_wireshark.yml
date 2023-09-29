@@ -1,0 +1,6 @@
+---
+- name: Add `user.name` to wireshark group
+  ansible.builtin.user:
+    name: "{{ user.name }}"
+    groups: wireshark
+    append: true

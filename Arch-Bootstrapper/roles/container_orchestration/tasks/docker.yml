@@ -1,0 +1,30 @@
+---
+- name: Add the `user.name` to docker
+  ansible.builtin.user:
+    name: "{{ user.name }}"
+    groups: docker
+    append: true
+
+- name: Create /etc/docker
+  ansible.builtin.file:
+    path: /etc/docker
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: Docker config
+  ansible.builtin.template:
+    src: daemon.json.j2
+    dest: /etc/docker/daemon.json
+    owner: root
+    group: root
+    mode: '0664'
+  notify:
+    - Enable docker service
+
+- name: Add entry for depot into /etc/hosts
+  ansible.builtin.lineinfile:
+    path: /etc/hosts
+    state: present
+    line: localhost depot

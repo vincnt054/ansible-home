@@ -1,0 +1,9 @@
+---
+- name: Install packages
+  ansible.builtin.import_tasks: install_packages.yml
+
+- name: Dotfiles Import
+  ansible.builtin.import_tasks: dotfiles.yml
+
+- name: Setup Emptty login manager
+  ansible.builtin.import_tasks: emptty.yml

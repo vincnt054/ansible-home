@@ -1,0 +1,6 @@
+---
+- name: Install packages
+  ansible.builtin.import_tasks: install_packages.yml
+
+- name: Configure firejail
+  ansible.builtin.import_tasks: configure_firejail.yml
