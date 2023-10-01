@@ -10,6 +10,7 @@
       - libguestfs
       - vde2
       - numactl
+      - dmidecode
     state: present
     extra_args: --noconfirm
     force: true

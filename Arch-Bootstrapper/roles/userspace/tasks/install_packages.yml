@@ -16,7 +16,7 @@
       - ffmpeg
       - ansible
       - vim
-      - sxiv
+      - nsxiv
       - fzf
       - ripgrep
       - htop
