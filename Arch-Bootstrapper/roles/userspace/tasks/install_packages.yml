@@ -26,6 +26,7 @@
       - clipmenu
       - gnupg
       - zip
+      - xclip
       - unzip
       - pass
       - rsync
@@ -64,6 +65,7 @@
       - dunst
       - ghidra
       - texlive
+      - gtk2
       - zathura
       - zathura-djvu
       - zathura-pdf-mupdf
