@@ -8,7 +8,7 @@
     - git
     - go
 
-- name: Create `aur_group`
+- name: Create `aur.group`
   ansible.builtin.group:
     name: "{{ aur.group }}"
     state: present
@@ -56,7 +56,7 @@
     state: absent
     remove: true
 
-- name: Delete `aur_group`
+- name: Delete `aur.group`
   ansible.builtin.group:
     name: "{{ aur.group }}"
     state: absent
