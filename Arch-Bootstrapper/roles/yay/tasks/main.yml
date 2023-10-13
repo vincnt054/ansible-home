@@ -1,11 +1,12 @@
 ---
-- name: Pacman -S git go
+- name: Install dependencies
   community.general.pacman:
-    name:
-      - git
-      - go
+    name: "{{ item }}"
     state: present
     extra_args: --noconfirm
+  loop:
+    - git
+    - go
 
 - name: Create `aur_group`
   ansible.builtin.group:
@@ -48,3 +49,20 @@
   register: output
   failed_when: output.rc in makepkg_err_rc
   changed_when: false
+
+- name: Cleanup `aur.user`
+  ansible.builtin.user:
+    name: "{{ aur.user }}"
+    state: absent
+    remove: true
+
+- name: Delete `aur_group`
+  ansible.builtin.group:
+    name: "{{ aur.group }}"
+    state: absent
+    remote: true
+
+- name: Delete configuration for `aur.user`
+  ansible.builtin.file:
+    path: "/etc/sudoers.d/11-install-{{ aur.user }}"
+    state: absent
