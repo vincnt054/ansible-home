@@ -1,5 +1,5 @@
 ---
-- name: Pacman -S ssh
+- name: Pacman -S openssh
   community.general.pacman:
     name:
       - openssh
@@ -7,33 +7,21 @@
     extra_args: --noconfirm
     force: true
 
-- name: Push OpenSSH daemon configuration file
+- name: Push sshd configuration file
   ansible.builtin.template:
     src: sshd_config.j2
     dest: /etc/ssh/sshd_config
     mode: '0644'
-  notify:
-    - Restart sshd
   when: ssh.prod
 
-- name: Enable and start OpenSSH
+- name: Enable and start sshd
   ansible.builtin.service:
     name: sshd.service
-    enabled: true
     state: started
+    enabled: true
   when: >
     ssh.enable_sshd is defined
     and ssh.enable_sshd
-    and ssh.prod
-
-- name: Disable and stop OpenSSH
-  ansible.builtin.service:
-    name: sshd.service
-    enabled: false
-    state: stopped
-  when: >
-    ssh.enable_sshd is defined
-    and not ssh.enable_sshd
     and ssh.prod
 
 - name: Make directory for user SSH key
