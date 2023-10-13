@@ -33,6 +33,7 @@
   ansible.builtin.git:
     repo: https://aur.archlinux.org/yay.git
     dest: "/home/{{ aur.user }}/opt/yay"
+    version: main
 
 - name: Build yay
   become: true
@@ -45,4 +46,5 @@
   environment:
     GOFLAGS: "-buildvcs=false"
   register: output
-  changed_when: output.rc is defined and output.rc != 0
+  failed_when: output.rc in makepkg_err_rc
+  changed_when: false
