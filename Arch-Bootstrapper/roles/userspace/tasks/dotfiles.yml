@@ -7,7 +7,7 @@
     accept_hostkey: true
     repo: "{{ repo.pass }}"
     dest: "/home/{{ user.name }}/.password-store"
-  ignore_errors: true
+    version: main
 
 - name: Failed clone pass
   ansible.builtin.fail:
@@ -27,8 +27,8 @@
     repo: "{{ repo.dotfiles }}"
     dest: "/home/{{ user.name }}/dotfiles-tmp"
     separate_git_dir: "/home/{{ user.name }}/.dotfiles"
+    version: main
   register: output_dotfiles
-  ignore_errors: true
 
 - name: Failed clone private dotfiles
   ansible.builtin.fail:
@@ -78,12 +78,12 @@
     - name: Template user services
       ansible.builtin.template:
         src: user_service.j2
-        dest: "{{ playbook_dir }}/roles/user_config/files/user_service.sh"
+        dest: "{{ playbook_dir }}/roles/user_config/scripts/user_service.sh"
         mode: "755"
       delegate_to: localhost
 
     - name: Run script for user_service
-      ansible.builtin.script: "user_service.sh"
+      ansible.builtin.script: "{{ playbook_dir }}/roles/user_config/scripts/user_service.sh"
 
 - name: Ensure ~/.gnupg exists
   ansible.builtin.file:
