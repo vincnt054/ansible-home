@@ -46,15 +46,15 @@
     state: present
     line: "{{ user.name }}"
 
-# - name: Creates directory
-#   ansible.builtin.file:
-#     path: "/home/{{ user.name }}/.config/firejail"
-#     state: directory
-#     owner: "{{ user.name }}"
-#     group: "{{ user.group }}"
-#     mode: '0755'
+- name: Creates directory
+  ansible.builtin.file:
+    path: "/home/{{ user.name }}/.config/firejail"
+    state: directory
+    owner: "{{ user.name }}"
+    group: "{{ user.group }}"
+    mode: '0755'
 
-# - name: Copy personal firejail config to ~/.config/firejail
-#   ansible.builtin.copy:
-#     paths: "profiles/"
-#     dest: "/home/{{ user.name }}/.config/firejail/"
+- name: Copy personal firejail config to ~/.config/firejail
+  ansible.builtin.copy:
+    src: "/home/{{ user.name }}/.config/firejail/"
+    dest: "/home/{{ user.name }}/.config/firejail/"
