@@ -34,7 +34,6 @@
   ansible.builtin.git:
     repo: https://aur.archlinux.org/yay.git
     dest: "/home/{{ aur.user }}/opt/yay"
-    version: main
 
 - name: Build yay
   become: true
@@ -49,20 +48,3 @@
   register: output
   failed_when: output.rc in makepkg_err_rc
   changed_when: false
-
-- name: Cleanup `aur.user`
-  ansible.builtin.user:
-    name: "{{ aur.user }}"
-    state: absent
-    remove: true
-
-- name: Delete `aur.group`
-  ansible.builtin.group:
-    name: "{{ aur.group }}"
-    state: absent
-    remote: true
-
-- name: Delete configuration for `aur.user`
-  ansible.builtin.file:
-    path: "/etc/sudoers.d/11-install-{{ aur.user }}"
-    state: absent
