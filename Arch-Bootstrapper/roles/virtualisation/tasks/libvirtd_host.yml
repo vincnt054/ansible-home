@@ -7,7 +7,7 @@
 
 - name: Check /etc/libvirt/libvirtd.conf exists
   ansible.builtin.stat:
-    path: /etc/libvirtd/libvirtd.conf
+    path: /etc/libvirt/libvirtd.conf
   register: libvirtd
 
 - name: Edit /etc/libvirt/libvirtd.conf for unix_sock_ro_perms
