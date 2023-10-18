@@ -8,6 +8,8 @@
     repo: "{{ repo.pass }}"
     dest: "/home/{{ user.name }}/.password-store"
     version: main
+  failed_when: false
+  register: output_dotfiles
 
 - name: Failed clone pass
   ansible.builtin.fail:
@@ -28,6 +30,7 @@
     dest: "/home/{{ user.name }}/dotfiles-tmp"
     separate_git_dir: "/home/{{ user.name }}/.dotfiles"
     version: main
+  failed_when: false
   register: output_dotfiles
 
 - name: Failed clone private dotfiles
@@ -75,15 +78,24 @@
         group: "{{ user.group }}"
         mode: '0744'
 
-    - name: Template user services
-      ansible.builtin.template:
-        src: user_service.j2
-        dest: "{{ playbook_dir }}/roles/user_config/scripts/user_service.sh"
-        mode: "755"
-      delegate_to: localhost
+    - name: Git clone doom emacs
+      become: true
+      become_user: "{{ user.name }}"
+      ansible.builtin.git:
+        repo: 'https://github.com/doomemacs/doomemacs'
+        dest: "/home/{{ user.name }}/.config/emacs"
+        depth: 1
+        version: master
 
-    - name: Run script for user_service
-      ansible.builtin.script: "{{ playbook_dir }}/roles/user_config/scripts/user_service.sh"
+- name: Template user services
+  ansible.builtin.template:
+    src: user_service.j2
+    dest: "{{ playbook_dir }}/roles/userspace/scripts/user_service.sh"
+    mode: "755"
+  delegate_to: localhost
+
+- name: Run script for user_service
+  ansible.builtin.script: "{{ playbook_dir }}/roles/userspace/scripts/user_service.sh"
 
 - name: Ensure ~/.gnupg exists
   ansible.builtin.file:
