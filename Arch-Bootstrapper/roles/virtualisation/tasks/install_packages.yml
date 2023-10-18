@@ -6,7 +6,6 @@
     extra_args: --noconfirm
     force: true
   loop:
-    - iptables-nft
     - qemu-full
     - virt-manager
     - libvirt
@@ -16,3 +15,6 @@
     - vde2
     - numactl
     - dmidecode
+
+- name: Pacman -S iptables-nft
+  ansible.builtin.shell: "yes | pacman -S iptables-nft"
