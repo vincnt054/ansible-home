@@ -8,7 +8,6 @@
     - ssh
     - userspace
     - networks
-    - sysmon
     - firejail
     - virtualisation
     - container
@@ -26,7 +25,22 @@
         upgrade: true
 
   post_tasks:
-    - meta: end_play
+    - name: Cleanup `aur.user`
+      ansible.builtin.user:
+        name: "{{ aur.user }}"
+        state: absent
+        remove: true
+
+    - name: Delete `aur.group`
+      ansible.builtin.group:
+        name: "{{ aur.group }}"
+        state: absent
+
+    - name: Delete configuration for `aur.user`
+      ansible.builtin.file:
+        path: "/etc/sudoers.d/11-install-{{ aur.user }}"
+        state: absent
+
     - name: Initiate a reboot
       ansible.builtin.reboot:
         reboot_timeout: 3600
