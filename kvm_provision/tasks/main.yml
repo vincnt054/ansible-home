@@ -1,0 +1,67 @@
+---
+# tasks file for kvm_provision
+- name: Ensure requirements in place
+  ansible.builtin.package:
+    name:
+      - guestfs-tools
+      - python3-libvirt
+      - python3-lxml
+    state: present
+  become: true
+
+- name: Get VMs list
+  community.libvirt.virt:
+    command: list_vms
+  register: existing_vms
+  changed_when: false
+
+- name: Create VM if not exists
+  when: "kvm_provision_vm_name not in existing_vms.list_vms"
+  block:
+    - name: Download base image
+      ansible.builtin.get_url:
+        url: "{{ kvm_provision_base_image_url }}"
+        dest: "/tmp/"
+        mode: '0600'
+        checksum: "{{ kvm_provision_base_image_sha }}"
+
+    - name: Convert iso to qcow2
+      ansible.builtin.command: |
+        qemu-img convert \
+        /tmp/{{ kvm_provision_base_image_name }} \
+        {{ kvm_provision_libvirt_pool_dir }}/{{ kvm_provision_vm_name }}.qcow2 \
+      register: copy_results
+      changed_when: true
+
+    - name: Ensure 0600 mode to qcow2 file
+      ansible.builtin.file:
+        path: "{{ kvm_provision_libvirt_pool_dir }}/{{ kvm_provision_vm_name }}.qcow2"
+        mode: '0600'
+
+    - name: Configure the image
+      ansible.builtin.command: |
+        virt-customize -a {{ kvm_provision_libvirt_pool_dir }}/{{ kvm_provision_vm_name }}.qcow2 \
+        --hostname {{ kvm_provision_vm_name }} \
+        --root-password password:{{ kvm_provision_vm_root_pass }} \
+        --ssh-inject 'root:file:{{ kvm_provision_ssh_key }}' \
+      when: copy_results is changed
+
+    - name: Define vm
+      community.libvirt.virt:
+        command: define
+        xml: "{{ kvm_provision_lookup('template', 'vm-template.xml.j2') }}"
+
+- name: Ensure VM is started
+  community.libvirt.virt:
+    name: "{{ kvm_provision_vm_name }}"
+    state: running
+  register: vm_start_results
+  until: "vm_start_results is success"
+  retries: 15
+  delay: 2
+
+- name: Ensure temporary file is deleted
+  ansible.builtin.file:
+    path: "/tmp/{{ kvm_provision_base_image_name }}"
+    state: absent
+  when: cleanup_tmp | bool
