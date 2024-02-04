@@ -1,13 +1,19 @@
 ---
 # tasks file for kvm_provision
+
 - name: Ensure requirements in place
   ansible.builtin.package:
     name:
       - guestfs-tools
-      - python3-libvirt
-      - python3-lxml
+      - libvirt-python
+      - python-lxml
     state: present
   become: true
+
+- name: Ensure pool directory exists
+  ansible.builtin.file:
+    path: "{{ kvm_provision_libvirt_pool_dir }}"
+    state: directory
 
 - name: Get VMs list
   community.libvirt.virt:
@@ -15,53 +21,55 @@
   register: existing_vms
   changed_when: false
 
-- name: Create VM if not exists
+- name: Create VM if it does not exist
+  vars:
+    user_prompt: "\n"
+    user_allowed_option:
+      "1": "Install standard VM"
+      "2": "New VM booting from ISO"
   when: "kvm_provision_vm_name not in existing_vms.list_vms"
   block:
-    - name: Download base image
-      ansible.builtin.get_url:
-        url: "{{ kvm_provision_base_image_url }}"
-        dest: "/tmp/"
-        mode: '0600'
-        checksum: "{{ kvm_provision_base_image_sha }}"
+    - name: Preparing user_prompt from user_allowed_options
+      ansible.builtin.set_fact:
+        user_prompt: "{{ user_prompt }}[{{ item.key }}] {{ item.value }}\n"
+      loop: "{{ user_allowed_option | dict2items }}"
 
-    - name: Convert iso to qcow2
-      ansible.builtin.command: |
-        qemu-img convert \
-        /tmp/{{ kvm_provision_base_image_name }} \
-        {{ kvm_provision_libvirt_pool_dir }}/{{ kvm_provision_vm_name }}.qcow2 \
-      register: copy_results
-      changed_when: true
+    - pause:
+        prompt: "{{user_prompt}}\nSelect one"
+      register: install_method
 
-    - name: Ensure 0600 mode to qcow2 file
-      ansible.builtin.file:
-        path: "{{ kvm_provision_libvirt_pool_dir }}/{{ kvm_provision_vm_name }}.qcow2"
-        mode: '0600'
+    - name: Loading Bay
+      when: >
+        install_method.user_input is defined and
+        install_method.user_input in user_allowed_option.keys()
+      block:
+        - name: Download base image
+          ansible.builtin.get_url:
+            url: "{{ kvm_provision_base_image_url }}"
+            dest: "{{ kvm_provision_base_image_directory }}/"
+            mode: '0660'
+            checksum: "{{ kvm_provision_base_image_sha }}"
+          register: base_image
 
-    - name: Configure the image
-      ansible.builtin.command: |
-        virt-customize -a {{ kvm_provision_libvirt_pool_dir }}/{{ kvm_provision_vm_name }}.qcow2 \
-        --hostname {{ kvm_provision_vm_name }} \
-        --root-password password:{{ kvm_provision_vm_root_pass }} \
-        --ssh-inject 'root:file:{{ kvm_provision_ssh_key }}' \
-      when: copy_results is changed
+        - name: Install new VM
+          when: install_method.user_input == "1"
+          ansible.builtin.include_role:
+            name: kvm_install_standard_vm
+          vars:
+            image: "{{ base_image }}"
 
-    - name: Define vm
+        - name: New VM booting from iso
+          when: install_method.user_input == "2"
+          ansible.builtin.include_role:
+            name: kvm_vm_boot_from_iso
+          vars:
+            image: "{{ base_image }}"
+
+    - name: Ensure VM is started
       community.libvirt.virt:
-        command: define
-        xml: "{{ kvm_provision_lookup('template', 'vm-template.xml.j2') }}"
-
-- name: Ensure VM is started
-  community.libvirt.virt:
-    name: "{{ kvm_provision_vm_name }}"
-    state: running
-  register: vm_start_results
-  until: "vm_start_results is success"
-  retries: 15
-  delay: 2
-
-- name: Ensure temporary file is deleted
-  ansible.builtin.file:
-    path: "/tmp/{{ kvm_provision_base_image_name }}"
-    state: absent
-  when: cleanup_tmp | bool
+        name: "{{ kvm_provision_vm_name }}"
+        state: running
+      register: vm_start_results
+      until: "vm_start_results is success"
+      retries: 15
+      delay: 2

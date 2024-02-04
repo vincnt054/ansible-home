@@ -1,0 +1,20 @@
+---
+# tasks file for vm_boot_from_iso
+#
+- name: Install VM
+  when: image.dest is defined
+  ansible.builtin.command: |
+    virt-install \
+    --name={{ kvm_provision_vm_name }} \
+    --vcpus={{ kvm_provision_vm_vcpus }} \
+    --ram={{ kvm_provision_vm_ram_mb }} \
+    --network={{ kvm_provision_vm_net }} \
+    --os-variant={{ kvm_provision_vm_os_variant }} \
+    --graphics={{ kvm_provision_vm_graphics }} \
+    {{ kvm_provision_virt_install_extra_args }} \
+    --cdrom={{ image.dest }} \
+    --livecd \
+    --disk none \
+    --noautoconsole \
+  register: conf_image_result
+  changed_when: conf_image_result.rc == 0
