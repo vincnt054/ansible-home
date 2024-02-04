@@ -1,0 +1,49 @@
+---
+- hosts: all
+  become: true
+  gather_facts: true
+  roles:
+    - natus
+    - yay
+    - ssh
+    - userspace
+    - networks
+    - firejail
+    - virtualisation
+    - container
+
+  pre_tasks:
+    - name: Test connection to host
+      ansible.builtin.ping:
+
+    - name: Test connection to archlinux.org
+      ansible.builtin.shell: ping -c 3 www.archlinux.org
+
+    - name: pacman update
+      community.general.pacman:
+        update_cache: true
+        upgrade: true
+
+  post_tasks:
+    - name: Cleanup `aur.user`
+      ansible.builtin.user:
+        name: "{{ aur.user }}"
+        state: absent
+        remove: true
+
+    - name: Delete `aur.group`
+      ansible.builtin.group:
+        name: "{{ aur.group }}"
+        state: absent
+
+    - name: Delete configuration for `aur.user`
+      ansible.builtin.file:
+        path: "/etc/sudoers.d/11-install-{{ aur.user }}"
+        state: absent
+
+    - name: Initiate a reboot
+      ansible.builtin.reboot:
+        reboot_timeout: 3600
+      async: 1
+      poll: 0
+      ignore_errors: true

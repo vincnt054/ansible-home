@@ -1,0 +1,101 @@
+---
+- name: Pacman -S browser
+  community.general.pacman:
+    name: "{{ item }}"
+    state: present
+    extra_args: --noconfirm
+    force: true
+  loop:
+    - firefox
+    - qutebrowser
+
+- name: Pacman -S clitools
+  community.general.pacman:
+    name: "{{ item }}"
+    state: present
+    extra_args: --noconfirm
+    force: true
+  loop:
+    - xterm
+    - feh
+    - ffmpeg
+    - ansible
+    - vim
+    - nsxiv
+    - fzf
+    - ripgrep
+    - htop
+    - tmux
+    - imagemagick
+    - man-db
+    - clipmenu
+    - gnupg
+    - zip
+    - xclip
+    - unzip
+    - pass
+    - rsync
+    - p7zip
+    - apparmor
+    - gnupg
+    - unrar
+    - atool
+    - hashdeep
+    - ddrescue
+    - lesspipe
+    - pigz
+    - sysstat
+    - glances
+    - btop
+    - htop
+    - lsof
+    - strace
+    - ltrace
+    - ngrep
+    - smartmontools
+    - progress
+    - python-pip
+
+- name: Pacman -S fonts
+  community.general.pacman:
+    name: "{{ item }}"
+    state: present
+    extra_args: --noconfirm
+    force: true
+  loop:
+    - adobe-source-han-sans-cn-fonts
+    - adobe-source-han-sans-hk-fonts
+    - adobe-source-han-sans-jp-fonts
+    - adobe-source-han-sans-kr-fonts
+    - adobe-source-han-sans-otc-fonts
+    - adobe-source-han-sans-tw-fonts
+
+- name: Pacman -S gui
+  community.general.pacman:
+    name: "{{ item }}"
+    state: present
+    extra_args: --noconfirm
+    force: true
+  loop:
+    - i3
+    - mpv
+    - emacs
+    - dunst
+    - ghidra
+    - texlive
+    - gtk2
+    - zathura
+    - zathura-djvu
+    - zathura-pdf-mupdf
+
+- name: Yay -S gui
+  become: true
+  become_user: "{{ aur.user }}"
+  ansible.builtin.command:
+    "yay --noconfirm --noprogressbar --needed --sync {{ item }}"
+  changed_when: false
+  loop:
+    - discord
+    - emptty
+    - ddd
+    - plantuml

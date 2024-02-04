@@ -1,0 +1,12 @@
+#!/bin/bash
+loginctl enable-linger {{ user.name }}
+
+su {{ user.name }} << 'EOF'
+
+export XDG_RUNTIME_DIR=/run/user/$(id -u {{ user.name }})
+export DBUS_SESSION_BUS_ADDRESS=/run/user/$(id -u {{ user.name }})/bus
+
+systemctl --user daemon-reload
+{% for item in user.service %}
+systemctl --user enable {{ item }}
+{% endfor %}

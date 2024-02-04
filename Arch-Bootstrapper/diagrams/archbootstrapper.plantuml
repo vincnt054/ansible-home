@@ -1,0 +1,97 @@
+@startuml
+
+[*] --> Pretasks
+
+state Pretasks {
+        Pretasks : Test connection to host
+        Pretasks : Test connection to archlinux.org
+        Pretasks : Update pacman mirrors
+}
+
+Pretasks --> Roles
+
+state Roles {
+        state natus {
+                natus : Create user.group
+                natus : Create user.name
+                natus : Allow user.name to be admin
+        }
+
+        state yay {
+                yay : Install dependencies for yay
+                yay : Create `aur.group` and `aur.user`
+                yay : Allow `aur.user` to run `pacman` without a password
+                yay : Clone yay repo and build
+                yay : Cleanup
+        }
+
+        state ssh {
+                ssh : Install openssh
+                ssh : Install custom sshd config file
+                ssh : Enable and start sshd
+                ssh : Install `user` ssh keys
+        }
+
+        state userspace {
+                userspace : Install browser, clitools, fonts, gui packages
+                userspace : Setup $HOME
+                userspace : Setup login manager
+        }
+        state networks {
+                networks : Install packages
+                networks : Configure wireshark
+                networks : Configure /etc/hosts
+        }
+
+        state firejail {
+                firejail : Install packages
+                firejail : Setup firejail
+        }
+
+        state virtualisation {
+                virtualisation : Install packages
+                virtualisation : Setup libvirtd
+        }
+
+        state container {
+                container : Install packages
+                container : Setup Docker
+                container : Setup K3s
+        }
+
+        natus --> yay
+        yay --> ssh
+        ssh --> userspace
+        userspace --> networks
+        networks --> firejail
+        firejail --> container
+}
+
+Roles --> Posttasks
+
+state Pretasks {
+        Posttasks : Reboot machine
+}
+state Services {
+        state emptty {
+        }
+        state libvirtd {
+        }
+        state sshd {
+        }
+        state Docker {
+        }
+        state K3s {
+        }
+        state shutdownk3s {
+        }
+}
+
+ssh --> sshd : notify
+userspace --> emptty : notify
+virtualisation --> libvirtd : notify
+container --> Docker : notify
+container --> K3s : notify
+container --> shutdownk3s : notify
+
+@enduml

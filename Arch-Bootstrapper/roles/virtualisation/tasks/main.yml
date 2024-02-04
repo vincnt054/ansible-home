@@ -1,0 +1,8 @@
+---
+- name: Install packages
+  ansible.builtin.import_tasks: install_packages.yml
+
+- name: Set up Libvirtd
+  ansible.builtin.import_tasks: libvirtd_host.yml
+  notify:
+    - Enable service libvirtd and ensure it is not masked

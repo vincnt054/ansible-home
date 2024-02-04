@@ -1,0 +1,60 @@
+---
+- name: Install firejail profile update script
+  ansible.builtin.copy:
+    src: firejail-profiler.sh
+    dest: /usr/local/bin/firejail-profiler
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: Create firejail profile directory
+  ansible.builtin.file:
+    path: /usr/local/etc/firejail
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: Verify firejail globals file exists
+  ansible.builtin.copy:
+    content: ""
+    dest: /etc/firejail/globals.local
+    owner: root
+    group: root
+    mode: '0644'
+    force: false
+
+- name: Add blacklist to globals
+  ansible.builtin.lineinfile:
+    dest: /etc/firejail/globals.local
+    state: present
+    line: "blacklist {{ item }}"
+  with_items: "{{ firejail.blacklist }}"
+
+- name: Verify firejail users file exists
+  ansible.builtin.copy:
+    content: ""
+    dest: /etc/firejail/firejail.users
+    owner: root
+    group: root
+    mode: '0644'
+    force: false
+
+- name: Add user to firejail users
+  ansible.builtin.lineinfile:
+    dest: /etc/firejail/firejail.users
+    state: present
+    line: "{{ user.name }}"
+
+- name: Creates directory
+  ansible.builtin.file:
+    path: "/home/{{ user.name }}/.config/firejail"
+    state: directory
+    owner: "{{ user.name }}"
+    group: "{{ user.group }}"
+    mode: '0755'
+
+- name: Copy personal firejail config to ~/.config/firejail
+  ansible.builtin.copy:
+    src: "/home/{{ user.name }}/.config/firejail/"
+    dest: "/home/{{ user.name }}/.config/firejail/"

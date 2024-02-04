@@ -1,0 +1,18 @@
+---
+- user:
+    - name:
+    - group:
+    - shell:
+
+- aur:
+    - user:
+    - group:
+
+- gpg:
+    - pub_key:
+    - priv_key:
+
+- ssh:
+    - prod:
+    - enable_sshd:
+    - user_key:

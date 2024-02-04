@@ -1,0 +1,51 @@
+---
+- name: Pacman -S openssh
+  community.general.pacman:
+    name:
+      - openssh
+    state: present
+    extra_args: --noconfirm
+    force: true
+
+- name: Push sshd configuration file
+  ansible.builtin.template:
+    src: sshd_config.j2
+    dest: /etc/ssh/sshd_config
+    mode: '0644'
+  when: ssh.prod
+
+- name: Enable and start sshd
+  ansible.builtin.service:
+    name: sshd.service
+    state: started
+    enabled: true
+  when: >
+    ssh.enable_sshd is defined
+    and ssh.enable_sshd
+    and ssh.prod
+
+- name: Make directory for user SSH key
+  ansible.builtin.file:
+    path: "/home/{{ user.name }}/.ssh"
+    state: directory
+    owner: "{{ user.name }}"
+    group: "{{ user.group }}"
+    mode: '0700'
+
+- name: Install user SSH key
+  ansible.builtin.copy:
+    src: "{{ ssh.user_key }}"
+    dest: "/home/{{ user.name }}/.ssh/id_rsa"
+    owner: "{{ user.name }}"
+    group: "{{ user.group }}"
+    mode: '0600'
+  when: ssh.user_key is defined
+
+- name: Install user SSH pub key
+  ansible.builtin.copy:
+    src: "{{ ssh.user_key }}.pub"
+    dest: "/home/{{ user.name }}/.ssh/id_rsa.pub"
+    mode: '0600'
+    owner: "{{ user.name }}"
+    group: "{{ user.group }}"
+  when: ssh.user_key is defined

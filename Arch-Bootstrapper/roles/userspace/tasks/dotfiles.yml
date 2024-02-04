@@ -1,0 +1,122 @@
+---
+- name: Clone pass repo into $HOME/.password-store
+  become: true
+  become_user: "{{ user.name }}"
+  ansible.builtin.git:
+    clone: true
+    accept_hostkey: true
+    repo: "{{ repo.pass }}"
+    dest: "/home/{{ user.name }}/.password-store"
+    version: main
+  failed_when: false
+  register: output_dotfiles
+
+- name: Failed clone pass
+  ansible.builtin.fail:
+    msg: "Failed clone pass"
+  when:
+    - output_pass.rc is defined
+    - output_pass.msg is defined
+    - output_pass.rc != 0
+    - '"already exists and is not an empty directory" not in output_pass.msg'
+
+- name: Clone private dotfiles repo into $HOME/dotfiles-tmp
+  become: true
+  become_user: "{{ user.name }}"
+  ansible.builtin.git:
+    clone: true
+    accept_hostkey: true
+    repo: "{{ repo.dotfiles }}"
+    dest: "/home/{{ user.name }}/dotfiles-tmp"
+    separate_git_dir: "/home/{{ user.name }}/.dotfiles"
+    version: main
+  failed_when: false
+  register: output_dotfiles
+
+- name: Failed clone private dotfiles
+  ansible.builtin.fail:
+    msg: "Failed clone private dotfiles"
+  when:
+    - output_dotfiles.rc is defined
+    - output_dotfiles.msg is defined
+    - output_dotfiles.rc != 0
+    - '"already exists and is not an empty directory" not in output_dotfiles.msg'
+
+- name: Check if dotfiles-tmp exists
+  ansible.builtin.stat:
+    path: "/home/{{ user.name }}/dotfiles-tmp"
+  register: dotfiles
+
+- name: Setup $HOME
+  when: dotfiles.stat.exists
+  block:
+    - name: Synchronize files from $HOME/dotfiles-tmp to $HOME
+      become: true
+      become_user: "{{ user.name }}"
+      ansible.posix.synchronize:
+        src: "/home/{{ user.name }}/dotfiles-tmp/"
+        dest: "/home/{{ user.name }}/"
+        rsync_opts:
+          - "--exclude=.git"
+      delegate_to: "{{ inventory_hostname }}"
+
+    - name: Remove $HOME/dotfiles-tmp
+      ansible.builtin.file:
+        path: "/home/{{ user.name }}/dotfiles-tmp"
+        state: absent
+
+    - name: Remove .git
+      ansible.builtin.file:
+        path: "/home/{{ user.name }}/.git"
+        state: absent
+
+    - name: Echo .dotfiles >> .gitignore
+      ansible.builtin.copy:
+        content: ".dotfiles"
+        dest: "/home/{{ user.name }}/.gitignore"
+        owner: "{{ user.name }}"
+        group: "{{ user.group }}"
+        mode: '0744'
+
+    - name: Git clone doom emacs
+      become: true
+      become_user: "{{ user.name }}"
+      ansible.builtin.git:
+        repo: 'https://github.com/doomemacs/doomemacs'
+        dest: "/home/{{ user.name }}/.config/emacs"
+        depth: 1
+        version: master
+
+- name: Template user services
+  ansible.builtin.template:
+    src: user_service.j2
+    dest: "{{ playbook_dir }}/roles/userspace/scripts/user_service.sh"
+    mode: "755"
+  delegate_to: localhost
+
+- name: Run script for user_service
+  ansible.builtin.script: "{{ playbook_dir }}/roles/userspace/scripts/user_service.sh"
+
+- name: Ensure ~/.gnupg exists
+  ansible.builtin.file:
+    path: "/home/{{ user.name }}/.gnupg"
+    state: directory
+    owner: "{{ user.name }}"
+    group: "{{ user.group }}"
+    mode: '0700'
+
+- name: Transport pub pgp key
+  ansible.builtin.copy:
+    src: "{{ gpg.pub_key }}"
+    dest: "/home/{{ user.name }}/.gnupg/my_pub_key.pgp"
+    owner: "{{ user.name }}"
+    group: "{{ user.group }}"
+    mode: '0600'
+
+- name: Transport priv pgp key
+  ansible.builtin.copy:
+    src: "{{ gpg.priv_key }}"
+    dest: "/home/{{ user.name }}/.gnupg/my_priv_key.pgp"
+    owner: "{{ user.name }}"
+    group: "{{ user.group }}"
+    mode: '0600'

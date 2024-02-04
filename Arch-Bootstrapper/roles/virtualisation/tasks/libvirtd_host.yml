@@ -1,0 +1,25 @@
+---
+- name: Add `user.name` to libvirtd group
+  ansible.builtin.user:
+    name: "{{ user.name }}"
+    groups: libvirt
+    append: true
+
+- name: Check /etc/libvirt/libvirtd.conf exists
+  ansible.builtin.stat:
+    path: /etc/libvirt/libvirtd.conf
+  register: libvirtd
+
+- name: Edit /etc/libvirt/libvirtd.conf for unix_sock_ro_perms
+  when: libvirtd.stat.exists
+  ansible.builtin.lineinfile:
+    dest: /etc/libvirt/libvirtd.conf
+    regexp: '^#unix_sock_ro_perms = "0777"$'
+    line: 'unix_sock_ro_perms = "0777"'
+
+- name: Edit /etc/libvirt/libvirtd.conf for unix_sock_rw_perms
+  when: libvirtd.stat.exists
+  ansible.builtin.lineinfile:
+    dest: /etc/libvirt/libvirtd.conf
+    regexp: '^#unix_sock_rw_perms = "0770"'
+    line: 'unix_sock_rw_perms = "0770"'

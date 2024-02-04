@@ -1,0 +1,12 @@
+---
+- name: Install packages
+  ansible.builtin.import_tasks: install_packages.yml
+  notify:
+    - Enable NetworkManager
+    - Enable Firewalld
+
+- name: Configure wireshark
+  ansible.builtin.import_tasks: configure_wireshark.yml
+
+- name: Configure /etc/hosts
+  ansible.builtin.import_tasks: configure_etc_hosts.yml

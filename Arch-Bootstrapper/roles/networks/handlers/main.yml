@@ -1,0 +1,10 @@
+---
+- name: Enable NetworkManager
+  ansible.builtin.service:
+      name: NetworkManager.service
+      enabled: true
+
+- name: Enable Firewalld
+  ansible.builtin.service:
+      name: firewalld.service
+      enabled: true

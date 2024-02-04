@@ -1,0 +1,10 @@
+{
+	"insecure-registries": [ "{{ docker.registry.host }}:{{ docker.registry.port }}" ],
+	"storage-driver": "overlay2",
+    "log-driver": "json-file",
+    "log-opts": {
+        "max-size": "{{ docker.max_size }}",
+        "max-file": "{{ docker.max_file }}",
+        "compress": "{{ docker.compress }}"
+    }
+}

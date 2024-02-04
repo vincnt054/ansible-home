@@ -1,0 +1,50 @@
+---
+- name: Install dependencies
+  community.general.pacman:
+    name: "{{ item }}"
+    state: present
+    extra_args: --noconfirm
+  loop:
+    - git
+    - go
+
+- name: Create `aur.group`
+  ansible.builtin.group:
+    name: "{{ aur.group }}"
+    state: present
+
+- name: Create the `aur.user`
+  ansible.builtin.user:
+    name: "{{ aur.user }}"
+    groups: "{{ aur.group }}"
+    create_home: true
+    append: true
+
+- name: Allow the `aur.user` to run `sudo pacman` without a password
+  ansible.builtin.lineinfile:
+    path: "/etc/sudoers.d/11-install-{{ aur.user }}"
+    line: "{{ aur.user }} ALL=(ALL) NOPASSWD: /usr/bin/pacman, /usr/bin/yay"
+    create: true
+    mode: '0440'
+    validate: 'visudo -cf %s'
+
+- name: Clone yay repo
+  become: true
+  become_user: "{{ aur.user }}"
+  ansible.builtin.git:
+    repo: https://aur.archlinux.org/yay.git
+    dest: "/home/{{ aur.user }}/opt/yay"
+
+- name: Build yay
+  become: true
+  become_user: "{{ aur.user }}"
+  ansible.builtin.command: "makepkg -si --noconfirm"
+  async: 60
+  poll: 5
+  args:
+    chdir: "/home/{{ aur.user }}/opt/yay"
+  environment:
+    GOFLAGS: "-buildvcs=false"
+  register: output
+  failed_when: output.rc in makepkg_err_rc
+  changed_when: false

@@ -1,0 +1,34 @@
+---
+- name: Pacman -S net-tools
+  community.general.pacman:
+    name: "{{ item }}"
+    state: present
+    extra_args: --noconfirm
+    force: true
+  loop:
+    - wget
+    - rsync
+    - nmap
+    - netcat
+    - socat
+    - tcpdump
+    - nethogs
+    - bmon
+    - sshuttle
+    - inetutils
+    - wireshark-cli
+    - whois
+    - firewalld
+    - iproute2
+    - openvpn
+    - networkmanager
+    - networkmanager-openvpn
+    - network-manager-applet
+
+- name: Yay -S spipe
+  become: true
+  become_user: "{{ aur.user }}"
+  ansible.builtin.command:
+    "yay --noconfirm --noprogressbar --needed --sync spipe"
+  register: output
+  changed_when: output.rc != 0

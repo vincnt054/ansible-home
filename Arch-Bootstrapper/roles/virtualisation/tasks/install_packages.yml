@@ -1,0 +1,20 @@
+---
+- name: Pacman -S virtualisation
+  community.general.pacman:
+    name: "{{ item }}"
+    state: present
+    extra_args: --noconfirm
+    force: true
+  loop:
+    - qemu-full
+    - virt-manager
+    - libvirt
+    - dnsmasq
+    - bridge-utils
+    - libguestfs
+    - vde2
+    - numactl
+    - dmidecode
+
+- name: Pacman -S iptables-nft
+  ansible.builtin.shell: "yes | pacman -S iptables-nft"

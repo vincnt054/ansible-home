@@ -1,0 +1,9 @@
+---
+- name: Install packages
+  ansible.builtin.import_tasks: install_packages.yml
+
+- name: Docker setup
+  ansible.builtin.import_tasks: docker.yml
+
+- name: K3s setup
+  ansible.builtin.import_tasks: k3s.yml
